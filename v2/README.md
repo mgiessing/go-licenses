@@ -56,7 +56,7 @@ Examples used in Kubeflow Pipelines:
     go-licenses csv
     ```
 
-    The csv file has three columns: `depdency`, `license download url` and inferred `license type`.
+    The csv file has three columns: `dependency`, `license download url` and inferred `license type`.
 
     Note, the format is consistent with [google/go-licenses](https://github.com/google/go-licenses).
 
@@ -174,6 +174,8 @@ General directions to improve this tool:
 #### P0
 
 * [ ] Use cobra to support providing the same information via argument or config.
+    * [x] BinaryPath arg
+    * [ ] Output CSV to stdout
 * [ ] Implement "check" command.
 * [ ] Support use-case of one modules folder with multiple binaries.
 * [x] Support customizing allowed license types.

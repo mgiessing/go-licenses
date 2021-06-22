@@ -31,13 +31,19 @@ import (
 
 // csvCmd represents the csv command
 var csvCmd = &cobra.Command{
-	Use:   "csv",
+	Use:   "csv [BINARY_PATH]",
 	Short: "Generate dependency license csv",
 	Long: `Generate license_info.csv for go modules. It mainly uses GitHub
 	license API to get license info. There may be false positives. Use it at
 	your own risk.`,
+	// The BINARY_PATH arg is optional, it can also be specified in config.
+	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		err := csvImp()
+		binaryPath := ""
+		if len(args) == 1 {
+			binaryPath = args[0]
+		}
+		err := csvImp(binaryPath)
 		if err != nil {
 			klog.Exit(err)
 		}
@@ -58,7 +64,7 @@ func init() {
 	// csvCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func csvImp() (err error) {
+func csvImp(binaryPath string) (err error) {
 	config, err := configmodule.Load("")
 	if err != nil {
 		return err
@@ -73,11 +79,14 @@ func csvImp() (err error) {
 	}
 	klog.V(2).InfoS("Config: license DB path", "path", config.Module.LicenseDB.Path)
 
-	metadata, err := gocli.ExtractBinaryMetadata(config.Module.Go.Binary.Path)
-	goModules := metadata.Modules
+	if binaryPath == "" {
+		binaryPath = config.Module.Go.Binary.Path
+	}
+	metadata, err := gocli.ExtractBinaryMetadata(binaryPath)
 	if err != nil {
 		return err
 	}
+	goModules := metadata.Modules
 	main, err := mainModule(metadata, config)
 	if err != nil {
 		return err
@@ -122,7 +131,7 @@ func csvImp() (err error) {
 		}
 		// When override.Version == "", the override apply to any version.
 		if override.Version != "" && override.Version != goModule.Version {
-			report(fmt.Errorf("override version mismatch: version %q!=%q", goModule.Version, override.Version))
+			report(fmt.Errorf("override version mismatch: found module %s, but override is for %s", goModule.Version, override.Version))
 			continue
 		}
 		if override.Skip {

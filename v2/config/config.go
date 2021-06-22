@@ -117,9 +117,6 @@ func Load(path string) (config *GoModLicensesConfig, err error) {
 	if err != nil {
 		return nil, err
 	}
-	if config.Module.Go.Binary.Path == "" {
-		return nil, errors.Errorf("goBinary.path is required")
-	}
 	if config.Module.Go.Version == "" {
 		config.Module.Go.Version = "main"
 	}

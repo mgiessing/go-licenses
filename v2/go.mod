@@ -6,7 +6,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.7.0
 	github.com/google/addlicense v0.0.0-20210428195630-6d92264d7170
 	github.com/google/licenseclassifier v0.0.0-20210325184830-bb04aff29e72
-	github.com/google/licenseclassifier/v2 v2.0.0-alpha.1
+	github.com/google/licenseclassifier/v2 v2.0.0-alpha.1.0.20210325184830-bb04aff29e72
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/otiai10/copy v1.6.0
 	github.com/pkg/errors v0.9.1

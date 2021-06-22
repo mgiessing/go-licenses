@@ -15,9 +15,8 @@
 module:
   go:
     module: github.com/google/go-licenses/v2
-    path: .
-    binary:
-      path: dist/linux/go-licenses
+    # binary:
+    #   path: dist/linux/go-licenses
   csv:
     path: license_info.csv
   notices:
@@ -59,7 +58,7 @@ module:
     excludePaths:
     - doc.go # File to generate documentation, it has duplicate license info as root license.
   - name: github.com/google/licenseclassifier
-    version: v0.0.0-20210108172934-df6aa8a2788b
+    version: v0.0.0-20210325184830-bb04aff29e72
     license:
       path: LICENSE
       spdxId: Apache-2.0

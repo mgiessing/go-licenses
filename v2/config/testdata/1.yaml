@@ -22,7 +22,6 @@ module:
     path: .cache/licenses
   go:
     module: github.com/google/go-licenses/v2
-    path: .
     binary:
       path: go-licenses
   csv:

@@ -73,21 +73,16 @@ func csvImp() (err error) {
 	}
 	klog.V(2).InfoS("Config: license DB path", "path", config.Module.LicenseDB.Path)
 
-	goModules, err := gocli.ListModulesInBinary(config.Module.Go.Binary.Path)
+	metadata, err := gocli.ExtractBinaryMetadata(config.Module.Go.Binary.Path)
+	goModules := metadata.Modules
 	if err != nil {
 		return err
 	}
-	mainModuleAbsPath, err := filepath.Abs(config.Module.Go.Path)
+	main, err := mainModule(metadata, config)
 	if err != nil {
 		return err
 	}
-	mainModule := []gocli.Module{{
-		Path:    config.Module.Go.Module,
-		Dir:     mainModuleAbsPath,
-		Version: config.Module.Go.Version,
-		Main:    true,
-	}}
-	goModules = append(mainModule, goModules...)
+	goModules = append([]gocli.Module{*main}, goModules...)
 	klog.InfoS("Done: found dependencies", "count", len(goModules))
 	if klog.V(3).Enabled() {
 		for _, goModule := range goModules {
@@ -274,4 +269,30 @@ func findExecutable() (string, error) {
 	}
 	dirPath := filepath.Dir(path)
 	return dirPath, nil
+}
+
+func mainModule(metadata *gocli.BinaryMetadata, config *configmodule.GoModLicensesConfig) (mod *gocli.Module, err error) {
+	defer func() {
+		if err != nil {
+			// wrap consistent error message
+			err = fmt.Errorf("Error getting main module info: %w", err)
+		}
+	}()
+	if metadata == nil {
+		return nil, fmt.Errorf("No binary metadata")
+	}
+	workdir, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	version := "main"
+	if config != nil && config.Module.Go.Version != "" {
+		version = config.Module.Go.Version
+	}
+	return &gocli.Module{
+		Path:    metadata.MainModule,
+		Dir:     workdir,
+		Version: version,
+		Main:    true,
+	}, nil
 }

@@ -34,7 +34,6 @@ func TestLoadConfig_SpecifiedPath(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, ".cache/licenses", loaded.Module.LicenseDB.Path)
 	assert.Equal(t, "go-licenses", loaded.Module.Go.Binary.Path)
-	assert.Equal(t, ".", loaded.Module.Go.Path)
 	assert.Equal(t, "github.com/google/go-licenses/v2", loaded.Module.Go.Module)
 	assert.Equal(t, "license_info.csv", loaded.Module.Csv.Path)
 	assert.Equal(t, "third_party/NOTICES", loaded.Module.Notices.Path)

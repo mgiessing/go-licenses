@@ -98,7 +98,7 @@ func csvImp(binaryPath string) (err error) {
 			klog.InfoS("dependency", "module", goModule.Path, "version", goModule.Version, "Dir", goModule.Dir)
 		}
 	}
-	f, err := os.Create(config.Module.Csv.Path)
+	f := os.Stdout // TODO: support writing to a file directly
 	if err != nil {
 		return errors.Wrapf(err, "Creating license csv file")
 	}

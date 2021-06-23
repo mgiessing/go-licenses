@@ -24,8 +24,6 @@ module:
     module: github.com/google/go-licenses/v2
     binary:
       path: go-licenses
-  csv:
-    path: license_info.csv
   notices:
     path: third_party/NOTICES
   overrides:

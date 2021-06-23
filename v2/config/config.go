@@ -26,7 +26,6 @@ import (
 type GoModLicensesConfig struct {
 	Module struct {
 		LicenseDB LicenseDB        `yaml:"licenseDB"`
-		Csv       CsvConfig        `yaml:"csv"`
 		Notices   NoticesConfig    `yaml:"notices"`
 		Go        GoModuleConfig   `yaml:"go"`
 		Overrides []ModuleOverride `yaml:"overrides"`
@@ -44,10 +43,6 @@ type GoModuleConfig struct {
 	Binary  struct {
 		Path string `yaml:"path"` // local path where the go binary lives in
 	} `yaml:"binary"`
-}
-
-type CsvConfig struct {
-	Path string `yaml:"path"` // local path where the csv lives in, optional. Defaults to license_info.csv.
 }
 
 type NoticesConfig struct {

@@ -63,8 +63,8 @@ upload:
 
 .PHONY: csv
 csv: dist-linux
-	dist/linux/go-licenses csv -v 4
+	dist/linux/go-licenses csv dist/linux/go-licenses | tee license_info.csv
 
 .PHONY: save
 save:
-	dist/linux/go-licenses save -v 4
+	dist/linux/go-licenses save dist/linux/go-licenses

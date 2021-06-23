@@ -39,21 +39,10 @@ Examples used in Kubeflow Pipelines:
     git checkout <version>
     ```
 
-1. Write down a minimal config file specifying your module name and which binary to analyze:
-
-    ```yaml
-    module:
-        go:
-            module: github.com/google/go-licenses/v2
-            path: .
-            binary:
-                path: dist/linux/go-licenses
-    ```
-
-1. Get dependencies from go modules and generate a `license_info.csv` file of their licenses:
+1. Get dependencies from a built go binary and generate a `license_info.csv` file of their licenses:
 
     ```bash
-    go-licenses csv
+    go-licenses csv [BINARY_PATH] > license_info.csv
     ```
 
     The csv file has three columns: `dependency`, `license download url` and inferred `license type`.
@@ -68,7 +57,7 @@ Examples used in Kubeflow Pipelines:
     Please check them manually and update your `go-licenses.yaml` config to fix them, refer to [the example](./go-licenses.yaml). After your config fix, re-run the tool to generate lists again:
 
     ```bash
-    go-licenses csv
+    go-licenses csv [BINARY_PATH] > license_info.csv
     ```
 
     Iterate until you resolved all license issues.
@@ -109,10 +98,9 @@ Rough idea of steps in the two commands.
 `go-licenses csv` does the following to generate the `license_info.csv`:
 
 1. Load `go-licenses.yaml` config file, the config file can contain
-    * module name
-    * built binary local path
+    * module git branch
     * module license overrides (path excludes or directly assign result license)
-1. All dependencies and transitive dependencies are listed by `go version -m <binary-path>`. When a binary is built with go modules, used module info are logged inside the binary. Then we parse go CLI result to get the full list.
+1. All dependencies and transitive dependencies are listed by `go version -m <binary-path>`. When a binary is built with go modules, module info are logged inside the binary as metadata. Then we parse go CLI result to get the full list using uw-labs/lichen.
 1. Scan licenses and report problems:
     1. Use <github.com/google/licenseclassifier/v2> detect licenses from all files of dependencies.
     1. Report an error if no license found for a dependency etc.
@@ -136,8 +124,8 @@ Rough idea of steps in the two commands.
 
 go-licenses/v2 is greatly inspired by
 
-* [github.com/google/go-licenses](https://github.com/google/go-licenses) for the commands and compliance workflow
-* [github.com/mitchellh/golicense](https://github.com/mitchellh/golicense) for getting modules from binary
+* [github.com/google/go-licenses](https://github.com/google/go-licenses) for the commands and compliance workflow.
+* [github.com/mitchellh/golicense](https://github.com/mitchellh/golicense) for getting modules from binary.
 * [github.com/uw-labs/lichen](https://github.com/uw-labs/lichen) for the vendored code to extract structured data from `go version -m` result.
 
 ## Comparison with similar tools
@@ -176,6 +164,7 @@ General directions to improve this tool:
 * [ ] Use cobra to support providing the same information via argument or config.
     * [x] BinaryPath arg
     * [ ] Output CSV to stdout
+    * [ ] license_info.csv path as input arg of save command.
 * [ ] Implement "check" command.
 * [ ] Support use-case of one modules folder with multiple binaries.
 * [x] Support customizing allowed license types.

@@ -46,7 +46,7 @@ var saveCmd = &cobra.Command{
 			klog.ErrorS(err, "Failed: load config")
 			os.Exit(1)
 		}
-		info, err := loadInfo(config.Module.Csv.Path)
+		info, err := loadInfo("") // TODO(Bobgy): support a flag to provide license_info.csv
 		if err != nil {
 			klog.ErrorS(err, "Failed: load license info csv")
 			os.Exit(1)
@@ -232,15 +232,12 @@ func complyWithLicenses(info []*dict.LicenseRecord, config config.GoModLicensesC
 	}
 	err = w.Flush()
 	if err != nil {
-		return errors.Wrapf(err, "Failed to flush %s", defaultLicenseInfoLocation)
+		return errors.Wrapf(err, "Failed to flush")
 	}
 	return nil
 }
 
 func loadInfo(path string) ([]*dict.LicenseRecord, error) {
-	if path == "" {
-		path = defaultLicenseInfoLocation
-	}
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read license info, path=%q: %w", path, err)

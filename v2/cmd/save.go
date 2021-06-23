@@ -35,6 +35,10 @@ import (
 	"k8s.io/klog/v2"
 )
 
+// flag variables
+var savePath string        // where to save files required for license compliance
+var overwriteSavePath bool // if the save path already exists, shall we overwrite?
+
 // saveCmd represents the save command
 var saveCmd = &cobra.Command{
 	Use:   "save <LICENSE_CSV_PATH>",
@@ -54,7 +58,21 @@ var saveCmd = &cobra.Command{
 			klog.ErrorS(err, "Failed: load license info csv")
 			os.Exit(1)
 		}
-		err = complyWithLicenses(info, *config)
+		if overwriteSavePath {
+			if err := os.RemoveAll(savePath); err != nil {
+				klog.Fatal(err)
+			}
+		}
+
+		// Check that the save path doesn't exist, otherwise it'd end up with a mix of
+		// existing files and the output of this command.
+		if d, err := os.Open(savePath); err == nil {
+			d.Close()
+			klog.Fatal(fmt.Errorf("%s already exists", savePath))
+		} else if !os.IsNotExist(err) {
+			klog.Fatal(err)
+		}
+		err = complyWithLicenses(info, *config, savePath)
 		if err != nil {
 			klog.ErrorS(err, "Failed: comply with licenses")
 			os.Exit(1)
@@ -63,20 +81,18 @@ var saveCmd = &cobra.Command{
 }
 
 func init() {
+	saveCmd.Flags().StringVar(&savePath, "save_path", "NOTICES", "Directory into which files should be saved that are required by license terms")
+	if err := saveCmd.MarkFlagRequired("save_path"); err != nil {
+		klog.Fatal(err)
+	}
+	if err := saveCmd.MarkFlagFilename("save_path"); err != nil {
+		klog.Fatal(err)
+	}
+	saveCmd.Flags().BoolVar(&overwriteSavePath, "force", false, "Delete the destination directory if it already exists.")
+
 	rootCmd.AddCommand(saveCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// saveCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// saveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-const defaultNoticesPath = "NOTICES"
 const defaultLicenseSubPath = "licenses.txt"
 const defaultSrcPath = "src"
 
@@ -148,11 +164,8 @@ func requirementType(license string, cfg config.LicensesConfig) (ComplianceReq, 
 	return requirement, nil
 }
 
-func complyWithLicenses(info []*dict.LicenseRecord, config config.GoModLicensesConfig) error {
-	noticesPath := config.Module.Notices.Path
-	if noticesPath == "" {
-		noticesPath = defaultNoticesPath
-	}
+func complyWithLicenses(info []*dict.LicenseRecord, config config.GoModLicensesConfig, savePath string) error {
+	noticesPath := savePath
 	licensePath := filepath.Join(noticesPath, defaultLicenseSubPath)
 	srcPath := filepath.Join(noticesPath, defaultSrcPath)
 	modules, err := gocli.ListModules()

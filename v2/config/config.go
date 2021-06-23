@@ -26,7 +26,6 @@ import (
 type GoModLicensesConfig struct {
 	Module struct {
 		LicenseDB LicenseDB        `yaml:"licenseDB"`
-		Notices   NoticesConfig    `yaml:"notices"`
 		Go        GoModuleConfig   `yaml:"go"`
 		Overrides []ModuleOverride `yaml:"overrides"`
 	} `yaml:"module"`
@@ -40,13 +39,6 @@ type LicenseDB struct {
 type GoModuleConfig struct {
 	Module  string `yaml:"module"`  // module name, e.g. github.com/google/go-licenses/v2
 	Version string `yaml:"version"` // main module version, e.g. master (defaults to main)
-	Binary  struct {
-		Path string `yaml:"path"` // local path where the go binary lives in
-	} `yaml:"binary"`
-}
-
-type NoticesConfig struct {
-	Path string `yaml:"path"`
 }
 
 type ModuleOverride struct {

@@ -15,10 +15,6 @@
 module:
   go:
     module: github.com/google/go-licenses/v2
-    # binary:
-    #   path: dist/linux/go-licenses
-  notices:
-    path: third_party/NOTICES
   overrides:
   - name: github.com/google/go-licenses/v2
     # This is not available remotely **yet**, so skip it.

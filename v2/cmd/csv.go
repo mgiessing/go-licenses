@@ -31,7 +31,7 @@ import (
 
 // csvCmd represents the csv command
 var csvCmd = &cobra.Command{
-	Use:   "csv [BINARY_PATH]",
+	Use:   "csv <BINARY_PATH>",
 	Short: "Generate dependency license csv",
 	Long: `Generate license_info.csv for go modules. It mainly uses GitHub
 	license API to get license info. There may be false positives. Use it at
@@ -79,9 +79,6 @@ func csvImp(binaryPath string) (err error) {
 	}
 	klog.V(2).InfoS("Config: license DB path", "path", config.Module.LicenseDB.Path)
 
-	if binaryPath == "" {
-		binaryPath = config.Module.Go.Binary.Path
-	}
 	metadata, err := gocli.ExtractBinaryMetadata(binaryPath)
 	if err != nil {
 		return err

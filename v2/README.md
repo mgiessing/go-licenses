@@ -42,7 +42,7 @@ Examples used in Kubeflow Pipelines:
 1. Get dependencies from a built go binary and generate a `license_info.csv` file of their licenses:
 
     ```bash
-    go-licenses csv [BINARY_PATH] > license_info.csv
+    go-licenses csv <BINARY_PATH> | tee license_info.csv
     ```
 
     The csv file has three columns: `dependency`, `license download url` and inferred `license type`.
@@ -57,7 +57,7 @@ Examples used in Kubeflow Pipelines:
     Please check them manually and update your `go-licenses.yaml` config to fix them, refer to [the example](./go-licenses.yaml). After your config fix, re-run the tool to generate lists again:
 
     ```bash
-    go-licenses csv [BINARY_PATH] > license_info.csv
+    go-licenses csv <BINARY_PATH> | tee license_info.csv
     ```
 
     Iterate until you resolved all license issues.

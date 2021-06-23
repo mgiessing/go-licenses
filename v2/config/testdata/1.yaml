@@ -22,10 +22,6 @@ module:
     path: .cache/licenses
   go:
     module: github.com/google/go-licenses/v2
-    binary:
-      path: go-licenses
-  notices:
-    path: third_party/NOTICES
   overrides:
   - name: github.com/google/go-licenses/v2
     license:

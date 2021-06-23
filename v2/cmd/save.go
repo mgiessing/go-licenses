@@ -37,16 +37,19 @@ import (
 
 // saveCmd represents the save command
 var saveCmd = &cobra.Command{
-	Use:   "save",
-	Short: "Save full license text locally",
-	Long:  `Save full license text and source code locally to be compliant.`,
+	Use:   "save <LICENSE_CSV_PATH>",
+	Short: "Save licenses and source code locally",
+	Long:  `Save full license text and source code locally to be compliant depending on license requirements.`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		csvPath := args[0]
 		config, err := config.Load("")
+		defer klog.Flush()
 		if err != nil {
 			klog.ErrorS(err, "Failed: load config")
 			os.Exit(1)
 		}
-		info, err := loadInfo("") // TODO(Bobgy): support a flag to provide license_info.csv
+		info, err := loadInfo(csvPath)
 		if err != nil {
 			klog.ErrorS(err, "Failed: load license info csv")
 			os.Exit(1)
@@ -56,7 +59,6 @@ var saveCmd = &cobra.Command{
 			klog.ErrorS(err, "Failed: comply with licenses")
 			os.Exit(1)
 		}
-		klog.Flush()
 	},
 }
 

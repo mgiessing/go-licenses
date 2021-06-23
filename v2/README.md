@@ -62,16 +62,14 @@ Examples used in Kubeflow Pipelines:
 
     Iterate until you resolved all license issues.
 
-1. Download notices, licenses and source folders that should be distributed along with the built binary:
+1. To comply with license terms, download notices, licenses and source folders that should be distributed along with the built binary:
 
     ```bash
-    go-licenses save
+    go-licenses save <CSV_PATH> --save_path="third_party/NOTICES"
     ```
 
-    Notices and licenses will be concatenated to a single file called `NOTICES/license.txt`.
-    Source code folders will be copied to `NOTICES/<module/import/path>`.
-
-    Notices folder location can be configured in [the go-licenses.yaml example](./go-licenses.yaml).
+    Notices and licenses will be concatenated to a single file `license.txt`.
+    Source code folders will be copied to `<module/import/path>`.
 
     Some licenses will be rejected based on its [license type](https://github.com/google/licenseclassifier/blob/df6aa8a2788bdf5ac382148c2453a407a29819b8/license_type.go#L341).
 
@@ -162,9 +160,10 @@ General directions to improve this tool:
 #### P0
 
 * [ ] Use cobra to support providing the same information via argument or config.
-    * [x] BinaryPath arg
-    * [ ] Output CSV to stdout
-    * [ ] license_info.csv path as input arg of save command.
+    * [x] BinaryPath arg.
+    * [x] Output CSV to stdout.
+    * [x] license_info.csv path as input arg of save command.
+    * [ ] save command needs --save_path flag.
 * [ ] Implement "check" command.
 * [ ] Support use-case of one modules folder with multiple binaries.
 * [x] Support customizing allowed license types.

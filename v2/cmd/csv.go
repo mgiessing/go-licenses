@@ -147,12 +147,12 @@ func csvImp(binaryPath string) (err error) {
 		}
 		hasReportedGetGithubRepoErr := false
 		writeLicenseInfo := func(info licenseInfo) error {
-			if len(info.spdxId) == 0 {
+			if info.spdxId == "" {
 				return fmt.Errorf("failed writeLicenseInfo: info.spdxId required")
 			}
 			url := info.url
-			if len(url) == 0 {
-				if len(info.licensePath) == 0 {
+			if url == "" {
+				if info.licensePath == "" {
 					return fmt.Errorf("failed writeLicenseInfo: info.licensePath required when info.url is empty")
 				}
 				if repo == nil && !hasReportedGetGithubRepoErr {
@@ -192,10 +192,10 @@ func csvImp(binaryPath string) (err error) {
 			return nil
 		}
 
-		if len(override.License.Path) > 0 {
+		if override.License.SpdxId != "" {
 			license := override.License
-			if len(license.SpdxId) == 0 {
-				report(fmt.Errorf("override.license.spdxId required"))
+			if license.Path == "" && license.Url == "" {
+				report(fmt.Errorf("At least one of override.license.Path and override.license.Url is required"))
 				continue
 			}
 			klog.V(4).InfoS("License overridden", "module", goModule.Path, "version", goModule.Version, "Dir", goModule.Dir)

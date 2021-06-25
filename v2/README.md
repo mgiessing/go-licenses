@@ -165,7 +165,7 @@ General directions to improve this tool:
     * [x] license_info.csv path as input arg of save command.
     * [x] save command needs --save_path flag.
 * [ ] Implement "check" command.
-* [ ] Support use-case of one modules folder with multiple binaries.
+* [x] Support use-case of one modules folder with multiple binaries.
 * [x] Support customizing allowed license types.
 * [x] Support replace directives.
 * [x] Support modules with +incompatible in their versions, ref: <https://golang.org/ref/mod#incompatible-versions>.

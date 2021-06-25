@@ -29,9 +29,13 @@ const DefaultConfidenceThreshold = 0.80
 
 var ErrorEmptyDir = errors.New("Invalid Argument: dir is empty")
 
-type LicenseFound struct {
+type File struct {
+	Path     string  // file path
+	Licenses []Found // licenses found in the file
+}
+
+type Found struct {
 	SpdxId     string // https://spdx.org/licenses/
-	Path       string
 	StartLine  int
 	EndLine    int
 	Confidence float64
@@ -57,7 +61,7 @@ func init() {
 }
 
 // Scan a directory for licenses.
-func ScanDir(dir string, options ScanDirOptions) ([]LicenseFound, error) {
+func ScanDir(dir string, options ScanDirOptions) ([]File, error) {
 	var wrap = func(cause error, extra string) error {
 		extraMessage := ""
 		if extra != "" {
@@ -86,7 +90,7 @@ func ScanDir(dir string, options ScanDirOptions) ([]LicenseFound, error) {
 	}
 	classifier := licenseclassifier.NewClassifier(DefaultConfidenceThreshold)
 	classifier.LoadLicenses(options.DbPath)
-	foundLicenses := make([]LicenseFound, 0)
+	files := make([]File, 0)
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return wrap(err, "walk error")
@@ -116,26 +120,30 @@ func ScanDir(dir string, options ScanDirOptions) ([]LicenseFound, error) {
 			return wrap(err, fmt.Sprintf("reading file %s", path))
 		}
 		matches := classifier.Match(fileBytes)
+		var file File
+		file.Path = path[len(dir)+1:] // relative path from module.Dir
 		for _, match := range matches {
 			if match.MatchType == string(matchTypeHeader) {
 				// ignore headers
 				// TODO: verify detected header licenses are included by top level license file
 				continue
 			}
-			foundLicenses = append(foundLicenses, LicenseFound{
+			file.Licenses = append(file.Licenses, Found{
 				SpdxId:     match.Name,
-				Path:       path[len(dir)+1:], // relative path from module.Dir
 				StartLine:  match.StartLine,
 				EndLine:    match.EndLine,
 				Confidence: match.Confidence,
 			})
+		}
+		if len(file.Licenses) > 0 {
+			files = append(files, file)
 		}
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	return foundLicenses, nil
+	return files, nil
 }
 
 // Temporarily disabled

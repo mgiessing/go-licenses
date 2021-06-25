@@ -163,7 +163,7 @@ func csvImp(binaryPath string) (err error) {
 					// so keep running to show more information to debug.
 				}
 				licensePath := info.licensePath
-				if info.subModulePath != "" {
+				if info.subModulePath != "" && info.subModulePath != "." {
 					licensePath = info.subModulePath + "/" + info.licensePath
 				}
 				url, err = repo.RemoteUrl(ghutils.RemoteUrlArgs{
@@ -232,21 +232,33 @@ func csvImp(binaryPath string) (err error) {
 		}
 
 		klog.V(4).InfoS("Scanning", "module", goModule.Path, "version", goModule.Version, "Dir", goModule.Dir)
-		licensesFound, err := licenses.ScanDir(goModule.Dir, licenses.ScanDirOptions{ExcludePaths: override.ExcludePaths, DbPath: config.Module.LicenseDB.Path})
+		fileLicenses, err := licenses.ScanDir(goModule.Dir, licenses.ScanDirOptions{ExcludePaths: override.ExcludePaths, DbPath: config.Module.LicenseDB.Path})
 		if err != nil {
 			report(err)
 			continue
 		}
-		if len(licensesFound) == 0 {
+		if len(fileLicenses) == 0 {
 			report(errors.Errorf("licenses not found"))
 			continue
 		}
 
-		for _, license := range licensesFound {
-			klog.V(3).InfoS("License", "module", goModule.Path, "SpdxId", license.SpdxId, "path", filepath.Join(goModule.Dir, license.Path))
+		for _, file := range fileLicenses {
+			spdxIds := make(map[string]bool)
+			for _, license := range file.Licenses {
+				spdxIds[license.SpdxId] = true
+			}
+			var joinedSpdxId = ""
+			for k := range spdxIds {
+				if joinedSpdxId == "" {
+					joinedSpdxId = k
+				} else {
+					joinedSpdxId = joinedSpdxId + " / " + k
+				}
+			}
+			klog.V(3).InfoS("License", "module", goModule.Path, "SpdxId", joinedSpdxId, "path", filepath.Join(goModule.Dir, file.Path))
 			writeLicenseInfo(licenseInfo{
-				spdxId:      license.SpdxId,
-				licensePath: license.Path,
+				spdxId:      joinedSpdxId,
+				licensePath: file.Path,
 			})
 			if err != nil {
 				return err

@@ -46,9 +46,15 @@ func TestScan_ThisRepo(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	expected := []licenses.LicenseFound{
-		{SpdxId: "Apache-2.0", Path: "third_party/google/licenseclassifier/LICENSE", StartLine: 2, EndLine: 175, Confidence: 1},
-		{SpdxId: "MIT", Path: "third_party/uw-labs/lichen/LICENSE", StartLine: 5, EndLine: 21, Confidence: 1},
+	expected := []licenses.File{
+		{
+			Path:     "third_party/google/licenseclassifier/LICENSE",
+			Licenses: []licenses.Found{{SpdxId: "Apache-2.0", StartLine: 2, EndLine: 175, Confidence: 1}},
+		},
+		{
+			Path:     "third_party/uw-labs/lichen/LICENSE",
+			Licenses: []licenses.Found{{SpdxId: "MIT", StartLine: 5, EndLine: 21, Confidence: 1}},
+		},
 	}
 	assert.Equal(t, expected, found)
 }
@@ -63,6 +69,6 @@ func TestScan_DirWithSymlink(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	expected := []licenses.LicenseFound{}
+	expected := []licenses.File{}
 	assert.Equal(t, expected, found)
 }

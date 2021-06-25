@@ -17,6 +17,7 @@ package gocli
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/go-licenses/v2/third_party/uw-labs/lichen/model"
 	lichenmodule "github.com/google/go-licenses/v2/third_party/uw-labs/lichen/module"
@@ -102,6 +103,9 @@ func joinModulesMetadata(refs []model.ModuleReference) (modules []Module, err er
 		if localModule.Dir == "" {
 			return nil, fmt.Errorf("Module %v's local directory is empty. Did you run go mod download?", ref.Path)
 		}
+		// The +incompatible suffix does not affect module version.
+		// ref: https://golang.org/ref/mod#incompatible-versions
+		ref.Version = strings.TrimSuffix(ref.Version, "+incompatible")
 		if localModule.Version != ref.Version {
 			return nil, fmt.Errorf("Found %v %v in go binary, but %v is downloaded in go modules. Are you running this tool from the working dir to build the binary you are analyzing?", ref.Path, ref.Version, localModule.Version)
 		}

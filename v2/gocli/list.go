@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"strings"
 )
 
 // Go module metadata
@@ -71,6 +72,9 @@ func ListModules() ([]Module, error) {
 		if m.Replace != nil {
 			m = *m.Replace
 		}
+		// The +incompatible suffix does not affect module version.
+		// ref: https://golang.org/ref/mod#incompatible-versions
+		m.Version = strings.TrimSuffix(m.Version, "+incompatible")
 		modules = append(modules, m)
 	}
 	return modules, nil

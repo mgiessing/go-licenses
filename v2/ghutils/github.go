@@ -77,9 +77,6 @@ func (repo *GitHubRepo) RemoteUrl(args RemoteUrlArgs) (string, error) {
 	if args.Raw {
 		template = "https://github.com/%s/%s/raw/%s/%s"
 	}
-	// The +incompatible suffix does not affect modules' git version.
-	// ref: https://golang.org/ref/mod#incompatible-versions
-	args.Version = strings.TrimRight(args.Version, "+incompatible")
 	url := fmt.Sprintf(
 		template,
 		repo.Owner,

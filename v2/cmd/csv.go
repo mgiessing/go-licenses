@@ -128,7 +128,7 @@ func csvImp(binaryPath string) (err error) {
 		}
 		// When override.Version == "", the override apply to any version.
 		if override.Version != "" && override.Version != goModule.Version {
-			report(fmt.Errorf("override version mismatch: found module %s, but override is for %s", goModule.Version, override.Version))
+			report(fmt.Errorf("override version mismatch: found %s, but override is for %s", goModule.Version, override.Version))
 			continue
 		}
 		if override.Skip {

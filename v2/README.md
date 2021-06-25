@@ -163,7 +163,7 @@ General directions to improve this tool:
     * [x] BinaryPath arg.
     * [x] Output CSV to stdout.
     * [x] license_info.csv path as input arg of save command.
-    * [ ] save command needs --save_path flag.
+    * [x] save command needs --save_path flag.
 * [ ] Implement "check" command.
 * [ ] Support use-case of one modules folder with multiple binaries.
 * [x] Support customizing allowed license types.

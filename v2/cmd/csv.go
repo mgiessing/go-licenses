@@ -243,16 +243,35 @@ func csvImp(binaryPath string) (err error) {
 		}
 
 		for _, file := range fileLicenses {
-			spdxIds := make(map[string]bool)
+			spdxIds := make([]string, 0)
 			for _, license := range file.Licenses {
-				spdxIds[license.SpdxId] = true
+				// We need the joinedSpdxId to be deterministic,
+				// because we want to verify found licenses are
+				// the same as what people have verified manually
+				// last time.
+				// If we use map[string]bool, we cannot guarantee
+				// order.
+				// Although slightly inefficient, looping
+				// through the array to find whether a license
+				// is a new found does guarantee we are appending
+				// licenses into the array in a deterministic
+				// order.
+				found := false
+				for _, spdxId := range spdxIds {
+					if license.SpdxId == spdxId {
+						found = true
+					}
+				}
+				if !found {
+					spdxIds = append(spdxIds, license.SpdxId)
+				}
 			}
 			var joinedSpdxId = ""
-			for k := range spdxIds {
+			for _, spdxId := range spdxIds {
 				if joinedSpdxId == "" {
-					joinedSpdxId = k
+					joinedSpdxId = spdxId
 				} else {
-					joinedSpdxId = joinedSpdxId + " / " + k
+					joinedSpdxId = joinedSpdxId + " / " + spdxId
 				}
 			}
 			klog.V(3).InfoS("License", "module", goModule.Path, "SpdxId", joinedSpdxId, "path", filepath.Join(goModule.Dir, file.Path))

@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -26,6 +27,7 @@ import (
 	"github.com/google/go-licenses/v2/licenses"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"golang.org/x/tools/go/packages"
 	"k8s.io/klog/v2"
 )
 
@@ -33,17 +35,14 @@ import (
 var csvCmd = &cobra.Command{
 	Use:   "csv <BINARY_PATH>",
 	Short: "Generate dependency license csv",
-	Long: `Generate license_info.csv for go modules. It mainly uses GitHub
-	license API to get license info. There may be false positives. Use it at
-	your own risk.`,
-	// The BINARY_PATH arg is optional, it can also be specified in config.
-	Args: cobra.MaximumNArgs(1),
+	Long: `Generate licenses csv table for the go binary. The command must
+	be run in the go module workdir used to build the binary.
+	The tool mainly uses google/licenseclassifier/v2 to get license info.
+	There may be false positives. Use it at your own risk.`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		binaryPath := ""
-		if len(args) == 1 {
-			binaryPath = args[0]
-		}
-		err := csvImp(binaryPath)
+		binaryPath := args[0]
+		err := csvImp(context.Background(), binaryPath)
 		if err != nil {
 			klog.Exit(err)
 		}
@@ -52,19 +51,9 @@ var csvCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(csvCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// csvCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// csvCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func csvImp(binaryPath string) (err error) {
+func csvImp(ctx context.Context, binaryPath string) (err error) {
 	config, err := configmodule.Load("")
 	if err != nil {
 		return err
@@ -79,7 +68,7 @@ func csvImp(binaryPath string) (err error) {
 	}
 	klog.V(2).InfoS("Config: license DB path", "path", config.Module.LicenseDB.Path)
 
-	metadata, err := gocli.ExtractBinaryMetadata(binaryPath)
+	metadata, err := gocli.ExtractBinaryMetadata(ctx, binaryPath)
 	if err != nil {
 		return err
 	}
@@ -88,7 +77,7 @@ func csvImp(binaryPath string) (err error) {
 	if err != nil {
 		return err
 	}
-	goModules = append([]gocli.Module{*main}, goModules...)
+	goModules = append([]packages.Module{*main}, goModules...)
 	klog.InfoS("Done: found dependencies", "count", len(goModules))
 	if klog.V(3).Enabled() {
 		for _, goModule := range goModules {
@@ -308,7 +297,7 @@ func findExecutable() (string, error) {
 	return dirPath, nil
 }
 
-func mainModule(metadata *gocli.BinaryMetadata, config *configmodule.GoModLicensesConfig) (mod *gocli.Module, err error) {
+func mainModule(metadata *gocli.BinaryMetadata, config *configmodule.GoModLicensesConfig) (mod *packages.Module, err error) {
 	defer func() {
 		if err != nil {
 			// wrap consistent error message
@@ -326,7 +315,7 @@ func mainModule(metadata *gocli.BinaryMetadata, config *configmodule.GoModLicens
 	if config != nil && config.Module.Go.Version != "" {
 		version = config.Module.Go.Version
 	}
-	return &gocli.Module{
+	return &packages.Module{
 		Path:    metadata.MainModule,
 		Dir:     workdir,
 		Version: version,

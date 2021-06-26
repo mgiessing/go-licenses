@@ -151,11 +151,10 @@ func complyWithLicenses(info []*dict.LicenseRecord, config config.GoModLicensesC
 	noticesPath := savePath
 	licensePath := filepath.Join(noticesPath, defaultLicenseSubPath)
 	srcPath := filepath.Join(noticesPath, defaultSrcPath)
-	modules, err := gocli.ListModules()
+	moduleDict, err := gocli.ListModules()
 	if err != nil {
 		return errors.Wrap(err, "Failed to list modules")
 	}
-	moduleDict := gocli.BuildModuleDict(modules)
 
 	err = os.RemoveAll(srcPath)
 	if err != nil {

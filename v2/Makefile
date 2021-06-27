@@ -1,3 +1,4 @@
+VERSION=v0.0.0-2021-06-27
 
 .PHONY: test
 test:
@@ -6,6 +7,39 @@ test:
 .PHONY: test-debug
 test-debug:
 	go test -v $$(go list ./... | grep -v /NOTICES/)
+
+.PHONY: clean
+clean:
+	rm -rf dist
+
+# Build distributable tar packages
+.PHONY: dist
+dist: dist-linux dist-darwin
+
+# Install to ~/bin/
+.PHONY: install
+install: dist-linux
+	cp dist/go-licenses-linux.tar.gz ~/bin/
+	cd ~/bin && tar xvf go-licenses-linux.tar.gz && rm -rf NOTICES && rm go-licenses-linux.tar.gz
+
+# Release on github.
+# Note, edit the VERSION variable first.
+.PHONY: release
+release: dist
+	gh release create $(VERSION) \
+		dist/go-licenses-linux.tar.gz \
+		dist/go-licenses-darwin.tar.gz \
+		--notes-file release_template.md \
+		--title "$(VERSION)" \
+		--prerelease
+
+.PHONY: csv
+csv: dist-linux
+	dist/linux/go-licenses csv dist/linux/go-licenses | tee licenses.csv
+
+.PHONY: save
+save:
+	dist/linux/go-licenses save licenses.csv
 
 .PHONY: build-linux
 build-linux: clean
@@ -24,9 +58,6 @@ build-darwin: clean
 	GOOS=darwin \
 	GOARCH=amd64 \
 	go build -tags netgo -ldflags '-extldflags "-static"' -o dist/darwin/go-licenses github.com/google/go-licenses/v2
-
-.PHONY: dist
-dist: dist-linux dist-darwin
 
 .PHONY: dist-linux
 dist-linux: build-linux
@@ -47,24 +78,3 @@ dist-darwin: build-darwin
 		go-licenses \
 		licenses \
 		NOTICES
-
-.PHONY: install
-install: dist-linux
-	cp dist/go-licenses-linux.tar.gz ~/bin/
-	cd ~/bin && tar xvf go-licenses-linux.tar.gz && rm -rf NOTICES && rm go-licenses-linux.tar.gz
-
-.PHONY: clean
-clean:
-	rm -rf dist/linux
-
-.PHONY: upload
-upload:
-	gsutil cp dist/go-licenses-linux.tar.gz gs://gongyuan-dev/licenses/go-licenses.tar.gz
-
-.PHONY: csv
-csv: dist-linux
-	dist/linux/go-licenses csv dist/linux/go-licenses | tee licenses.csv
-
-.PHONY: save
-save:
-	dist/linux/go-licenses save licenses.csv

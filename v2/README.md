@@ -2,6 +2,8 @@
 
 ## **THIS IS STILL UNDER DEVELOPMENT**
 
+Find latest updates in the tracker issue: https://github.com/google/go-licenses/issues/70.
+
 A tool to automate license management workflow for go module project's dependencies and transitive dependencies.
 
 ## Install

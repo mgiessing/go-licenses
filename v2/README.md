@@ -18,7 +18,7 @@ sudo mv go-licenses/* /usr/local/bin/
 # or move the content to anywhere in PATH
 ```
 
-## Output Example
+## Config & Output Examples
 
 <!-- TODO: update NOTICES folder of this repo. -->
 <!-- [NOTICES folder](./NOTICES) is an example of generated NOTICES for go-licenses tool itself. -->
@@ -26,8 +26,7 @@ sudo mv go-licenses/* /usr/local/bin/
 Examples used in Kubeflow Pipelines:
 
 * [go-licenses.yaml (config file)](https://github.com/kubeflow/pipelines/blob/master/v2/go-licenses.yaml)
-* [license_info.csv (generated)](https://github.com/kubeflow/pipelines/blob/master/v2/third_party/license_info.csv)
-* [NOTICES/licenses.txt (generated)](https://github.com/kubeflow/pipelines/blob/master/v2/third_party/NOTICES/licenses.txt)
+* [licenses.csv (generated)](https://github.com/kubeflow/pipelines/blob/master/v2/third_party/licenses/launcher.csv)
 
 ## Usage
 

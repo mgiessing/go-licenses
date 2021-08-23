@@ -8,11 +8,10 @@ A tool to automate license management workflow for go module project's dependenc
 
 ## Install
 
-Download the released package and install it to your PATH:
-TODO: udpate URL after release.
+Download the released package and install it to your PATH, choose a release from https://github.com/Bobgy/go-licenses/releases:
 
 ```bash
-curl -LO download-url/go-licenses-linux.tar.gz
+curl -LO <download-url>/go-licenses-linux.tar.gz
 tar xvf go-licenses-linux.tar.gz
 sudo mv go-licenses/* /usr/local/bin/
 # or move the content to anywhere in PATH

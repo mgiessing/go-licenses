@@ -48,12 +48,12 @@ func TestScan_ThisRepo(t *testing.T) {
 	}
 	expected := []licenses.File{
 		{
-			Path:     "third_party/google/licenseclassifier/LICENSE",
-			Licenses: []licenses.Found{{SpdxId: "Apache-2.0", StartLine: 2, EndLine: 175, Confidence: 1}},
+			Path:     "third_party/go/runtime/debug/LICENSE",
+			Licenses: []licenses.Found{{SpdxId: "BSD-3-Clause", StartLine: 3, EndLine: 27, Confidence: 0.9812206572769953}},
 		},
 		{
-			Path:     "third_party/uw-labs/lichen/LICENSE",
-			Licenses: []licenses.Found{{SpdxId: "MIT", StartLine: 5, EndLine: 21, Confidence: 1}},
+			Path:     "third_party/google/licenseclassifier/LICENSE",
+			Licenses: []licenses.Found{{SpdxId: "Apache-2.0", StartLine: 2, EndLine: 175, Confidence: 1}},
 		},
 	}
 	assert.Equal(t, expected, found)

@@ -27,7 +27,6 @@ import (
 	"github.com/google/go-licenses/v2/licenses"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"golang.org/x/tools/go/packages"
 	"k8s.io/klog/v2"
 )
 
@@ -68,16 +67,16 @@ func csvImp(ctx context.Context, binaryPath string) (err error) {
 	}
 	klog.V(2).InfoS("Config: license DB path", "path", config.Module.LicenseDB.Path)
 
-	metadata, err := gocli.ExtractBinaryMetadata(ctx, binaryPath)
+	metadata, err := gocli.ExtractBinaryMetadata(binaryPath)
 	if err != nil {
 		return err
 	}
-	goModules := metadata.Modules
+	goModules := metadata.Deps
 	main, err := mainModule(metadata, config)
 	if err != nil {
 		return err
 	}
-	goModules = append([]packages.Module{*main}, goModules...)
+	goModules = append([]gocli.Module{*main}, goModules...)
 	klog.InfoS("Done: found dependencies", "count", len(goModules))
 	if klog.V(3).Enabled() {
 		for _, goModule := range goModules {
@@ -297,7 +296,7 @@ func findExecutable() (string, error) {
 	return dirPath, nil
 }
 
-func mainModule(metadata *gocli.BinaryMetadata, config *configmodule.GoModLicensesConfig) (mod *packages.Module, err error) {
+func mainModule(metadata *gocli.BinaryMetadata, config *configmodule.GoModLicensesConfig) (mod *gocli.Module, err error) {
 	defer func() {
 		if err != nil {
 			// wrap consistent error message
@@ -307,18 +306,10 @@ func mainModule(metadata *gocli.BinaryMetadata, config *configmodule.GoModLicens
 	if metadata == nil {
 		return nil, fmt.Errorf("No binary metadata")
 	}
-	workdir, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
 	version := "main"
 	if config != nil && config.Module.Go.Version != "" {
 		version = config.Module.Go.Version
 	}
-	return &packages.Module{
-		Path:    metadata.MainModule,
-		Dir:     workdir,
-		Version: version,
-		Main:    true,
-	}, nil
+	metadata.Main.Version = version
+	return &metadata.Main, nil
 }

@@ -20,57 +20,33 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
-	"strings"
 
 	"golang.org/x/tools/go/packages"
 )
 
 // List go modules with metadata in workdir using go CLI list command.
-func ListModules() (map[string]packages.Module, error) {
+// Modules with replace directive are returned as the replaced module instead.
+func ListModules() (map[string]Module, error) {
 	out, err := exec.Command("go", "list", "-m", "-json", "all").Output()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to list go modules: %w", err)
 	}
 	// reference: https://github.com/golang/go/issues/27655#issuecomment-420993215
-	modules := make([]packages.Module, 0)
+	modules := make([]Module, 0)
 
 	dec := json.NewDecoder(bytes.NewReader(out))
 	for {
-		var m packages.Module
-		if err := dec.Decode(&m); err != nil {
+		var tmp packages.Module
+		if err := dec.Decode(&tmp); err != nil {
 			if err == io.EOF {
 				break
 			}
 			return nil, fmt.Errorf("Failed to read go list output: %w", err)
 		}
-		// Example of a module with replace directive: 	k8s.io/kubernetes => k8s.io/kubernetes v1.11.1
-		// {
-		//         "Path": "k8s.io/kubernetes",
-		//         "Version": "v0.17.9",
-		//         "Replace": {
-		//                 "Path": "k8s.io/kubernetes",
-		//                 "Version": "v1.11.1",
-		//                 "Time": "2018-07-17T04:20:29Z",
-		//                 "Dir": "/home/gongyuan_kubeflow_org/go/pkg/mod/k8s.io/kubernetes@v1.11.1",
-		//                 "GoMod": "/home/gongyuan_kubeflow_org/go/pkg/mod/cache/download/k8s.io/kubernetes/@v/v1.11.1.mod"
-		//         },
-		//         "Dir": "/home/gongyuan_kubeflow_org/go/pkg/mod/k8s.io/kubernetes@v1.11.1",
-		//         "GoMod": "/home/gongyuan_kubeflow_org/go/pkg/mod/cache/download/k8s.io/kubernetes/@v/v1.11.1.mod"
-		// }
-		// handle replace directives
-		// Note, we specifically want to replace version field.
-		// Haven't confirmed, but we may also need to override the
-		// entire struct when using replace directive with local folders.
-		if m.Replace != nil {
-			m = *m.Replace
-		}
-		// The +incompatible suffix does not affect module version.
-		// ref: https://golang.org/ref/mod#incompatible-versions
-		m.Version = strings.TrimSuffix(m.Version, "+incompatible")
-		modules = append(modules, m)
+		modules = append(modules, *newModule(&tmp))
 	}
 
-	dict := make(map[string]packages.Module)
+	dict := make(map[string]Module)
 	for i := range modules {
 		dict[modules[i].Path] = modules[i]
 	}

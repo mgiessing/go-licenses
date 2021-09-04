@@ -1,6 +1,4 @@
-# go-licenses
-
-## **THIS IS STILL UNDER DEVELOPMENT**
+# go-licenses v2
 
 Find latest updates in the tracker issue: https://github.com/google/go-licenses/issues/70.
 
@@ -185,29 +183,13 @@ General directions to improve this tool:
 
 ## License Workflow Design Overview
 
-This section introduces full workflow to comply with open source licenses.
-In each workflow stage, we list several options and what this tool prefers.
+The v2 package is being developed and currently incomplete, @Bobgy is
+upstreaming changes from his fork in <https://github.com/Bobgy/go-licenses/blob/main/v2>.
 
-1. List dependencies - Options
-    * (Preferred) List dependencies in a go binary
-    * List all go module dependencies
+Tracking issue where you can find the roadmap and progress:
+<https://github.com/google/go-licenses/issues/70>.
 
-1. Detect licenses for a dependency
-    * Files to consider - options:
-        * (Preferred) Scan every file
-        * Only look into common license file names like LICENSE, LICENSE.txt, COPYING, etc.
-    * License classifier - options:
-        * (Preferred) [google/licenseclassifier/v2](https://github.com/google/licenseclassifier/tree/main/v2)
-        * [licensee](https://github.com/licensee/licensee)
-        * GitHub license API
-        * many other options
-    * Manual configs to overcome what we cannot automate
-        * (not supported yet) allowlist for licenses
-        * (supported) override manually examined licenses
-        * (supported) exclude self-owned proprietary dependencies
-        * (supported) pin config to dependency version to avoid stale configs
+The major changes from v1 are:
 
-1. Comply with license requirements by redistributing:
-    * attribution/copyright notice
-    * licenses in full text
-    * dependency source code for licenses that require so
+* V2 only supports go modules, it can get license URL for modules without a need for you to vendor your dependencies.
+* V2 does not assume each module has a single license, v2 will scan all the files for each module to find licenses.

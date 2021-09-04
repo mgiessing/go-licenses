@@ -7,5 +7,5 @@ dist
 # MacOS common ignores
 .DS_Store
 
-# IDE
+# Editor
 .vscode

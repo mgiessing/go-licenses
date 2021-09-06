@@ -6,8 +6,6 @@ github.com/go-logr/logr, https://github.com/go-logr/logr/blob/v0.4.0/LICENSE, Ap
 github.com/google/licenseclassifier, https://github.com/google/licenseclassifier/blob/bb04aff29e72/LICENSE, Apache-2.0
 github.com/google/licenseclassifier/stringclassifier, https://github.com/google/licenseclassifier/blob/bb04aff29e72/stringclassifier/LICENSE, Apache-2.0
 github.com/google/licenseclassifier/v2, https://github.com/google/licenseclassifier/blob/bb04aff29e72/LICENSE#L2-L202, Apache-2.0
-github.com/hashicorp/errwrap, https://github.com/hashicorp/errwrap/blob/v1.0.0/LICENSE, MPL-2.0
-github.com/hashicorp/go-multierror, https://github.com/hashicorp/go-multierror/blob/v1.1.1/LICENSE, MPL-2.0
 github.com/otiai10/copy, https://github.com/otiai10/copy/blob/v1.6.0/LICENSE, MIT
 github.com/pkg/errors, https://github.com/pkg/errors/blob/v0.9.1/LICENSE, BSD-2-Clause
 github.com/sergi/go-diff, https://github.com/sergi/go-diff/blob/v1.1.0/LICENSE, MIT / Apache-2.0
@@ -16,10 +14,10 @@ github.com/spf13/pflag, https://github.com/spf13/pflag/blob/v1.0.5/LICENSE, BSD-
 golang.org/x/mod, https://github.com/golang/mod/blob/v0.4.2/LICENSE, BSD-3-Clause
 golang.org/x/net, https://github.com/golang/net/blob/a5a99cb37ef4/LICENSE, BSD-3-Clause
 golang.org/x/sys, https://github.com/golang/sys/blob/977fb7262007/LICENSE, BSD-3-Clause
-golang.org/x/tools, https://github.com/golang/tools/blob/v0.1.4/LICENSE, BSD-3-Clause
-golang.org/x/tools, https://github.com/golang/tools/blob/v0.1.4/cmd/getgo/LICENSE, BSD-3-Clause
-golang.org/x/tools, https://github.com/golang/tools/blob/v0.1.4/cmd/goyacc/yacc.go, MIT
-golang.org/x/tools, https://github.com/golang/tools/blob/v0.1.4/internal/lsp/cmd/info.go, MIT / BSD-3-Clause
+golang.org/x/tools, https://github.com/golang/tools/blob/v0.1.5/LICENSE, BSD-3-Clause
+golang.org/x/tools, https://github.com/golang/tools/blob/v0.1.5/cmd/getgo/LICENSE, BSD-3-Clause
+golang.org/x/tools, https://github.com/golang/tools/blob/v0.1.5/cmd/goyacc/yacc.go, MIT
+golang.org/x/tools, https://github.com/golang/tools/blob/v0.1.5/internal/lsp/cmd/info.go, MIT / BSD-3-Clause
 golang.org/x/xerrors, https://github.com/golang/xerrors/blob/5ec99f83aff1/LICENSE, BSD-3-Clause
 gopkg.in/yaml.v2, https://github.com/go-yaml/yaml/blob/v2.4.0/LICENSE, Apache-2.0 / MIT
 k8s.io/klog/v2, https://github.com/kubernetes/klog/blob/v2.9.0/LICENSE, Apache-2.0

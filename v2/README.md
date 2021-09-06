@@ -40,7 +40,9 @@ Examples used in Kubeflow Pipelines:
 1. Get dependencies from a built go binary and generate a `license_info.csv` file of their licenses:
 
     ```bash
-    go-licenses csv <BINARY_PATH> | tee license_info.csv
+    go-licenses csv <package> | tee licenses.csv
+    # or
+    go-licenses csv --binary <binary_path> | tee licenses.csv
     ```
 
     The csv file has three columns: `dependency`, `license download url` and inferred `license type`.
@@ -52,18 +54,14 @@ Examples used in Kubeflow Pipelines:
     * Download url of a license: they will be left out in the csv.
     * SPDX ID of a license: they will be named `Unknown` in the csv.
 
-    Please check them manually and update your `go-licenses.yaml` config to fix them, refer to [the example](./go-licenses.yaml). After your config fix, re-run the tool to generate lists again:
-
-    ```bash
-    go-licenses csv <BINARY_PATH> | tee license_info.csv
-    ```
-
+    Check them manually and update your `go-licenses.yaml` config to fix them, refer to [the example](./go-licenses.yaml).
+    After your config fix, re-run the same command to generate licenses csv again.
     Iterate until you resolved all license issues.
 
 1. To comply with license terms, download notices, licenses and source folders that should be distributed along with the built binary:
 
     ```bash
-    go-licenses save <CSV_PATH> --save_path="third_party/NOTICES"
+    go-licenses save <licenses_csv_path> --save_path="third_party/NOTICES"
     ```
 
     Notices and licenses will be concatenated to a single file `license.txt`.
@@ -71,21 +69,13 @@ Examples used in Kubeflow Pipelines:
 
     Some licenses will be rejected based on its [license type](https://github.com/google/licenseclassifier/blob/df6aa8a2788bdf5ac382148c2453a407a29819b8/license_type.go#L341).
 
-### Integrating in CI
+### Integrating into a project with CI
 
-Typically, I think we should check `licenses_info.csv` into source control and
-download license contents when releasing.
+What works for my project:
 
-An early idea for CI is to run a simple script:
-
-1. clones the repo, run `go-licenses csv`.
-1. verifies if generated `licenses_info.csv` if up-to-date as the version in the repo.
-
-We might worry about flakiness, because various dependencies could be down
-temporarily. Another simpler idea is to let the script do:
-
-1. If `go.mod` has been updated, but not the license files.
-1. Fails and says you should update the license files.
+* Check `licenses.csv` into source control.
+* During presubmit tests (alongside other go unit tests), verify `licenses.csv` is in-sync using `go-licenses csv` command.
+* When building a container with the go binary (for example during release), comply to open source licenses using `go-licenses save` command.
 
 ## Implementation Details
 
@@ -122,7 +112,7 @@ go-licenses/v2 is greatly inspired by
 
 * [github.com/google/go-licenses](https://github.com/google/go-licenses) for the commands and compliance workflow.
 * [github.com/mitchellh/golicense](https://github.com/mitchellh/golicense) for getting modules from binary.
-* [github.com/uw-labs/lichen](https://github.com/uw-labs/lichen) for the vendored code to extract structured data from `go version -m` result.
+* [github.com/uw-labs/lichen](https://github.com/uw-labs/lichen) for the configuration to facilitate incremental human validation after version upgrade.
 
 ## Comparison with similar tools
 
@@ -135,7 +125,7 @@ go-licenses/v2 is greatly inspired by
   * go-licenses/v2 scans all dependency files to find multiple licenses if any, while go-licenses detects by file name heuristics in local source folders and only finds one license per dependency.
   * go-licenses/v2 supports using a manually maintained config file `go-licenses.yaml`, so that we can reuse periodic license changes with existing information.
 * go-licenses/v2 was mostly written before I learned [github.com/github/licensed](https://github.com/github/licensed) is a thing.
-  * Similar to google/go-licenses, github/licensed only use heuristics to find licenses and assumes one license per repo.
+  * similar to google/go-licenses, github/licensed only use heuristics to find licenses and assumes one license per repo.
   * github/licensed uses a different library for detecting and classifying licenses.
 * go-licenses/v2 is a rewrite of [kubeflow/testing/go-license-tools](https://github.com/kubeflow/testing/tree/master/py/kubeflow/testing/go-license-tools) in go, with many improvements:
   * better & more robust github repo resolution ratio
@@ -158,10 +148,10 @@ General directions to improve this tool:
 #### P0
 
 * [ ] Use cobra to support providing the same information via argument or config.
-    * [x] BinaryPath arg.
-    * [x] Output CSV to stdout.
-    * [x] license_info.csv path as input arg of save command.
-    * [x] save command needs --save_path flag.
+  * [x] BinaryPath arg.
+  * [x] Output CSV to stdout.
+  * [x] license_info.csv path as input arg of save command.
+  * [x] save command needs --save_path flag.
 * [ ] Implement "check" command.
 * [x] Support use-case of one modules folder with multiple binaries.
 * [x] Support customizing allowed license types.

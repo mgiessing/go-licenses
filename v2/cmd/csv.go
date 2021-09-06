@@ -20,6 +20,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/google/go-licenses/v2/config"
 	configmodule "github.com/google/go-licenses/v2/config"
 	"github.com/google/go-licenses/v2/ghutils"
 	"github.com/google/go-licenses/v2/gocli"
@@ -32,12 +33,14 @@ import (
 
 // csvCmd represents the csv command
 var csvCmd = &cobra.Command{
-	Use:   "csv <BINARY_PATH>",
-	Short: "Generate dependency license csv",
-	Long: `Generate licenses csv table for the go binary. The command must
-	be run in the go module workdir used to build the binary.
-	The tool mainly uses google/licenseclassifier/v2 to get license info.
-	There may be false positives. Use it at your own risk.`,
+	Use:   "csv {<package>, --binary <binary_path>}",
+	Short: "Generate dependency licenses csv from a go package or a built go binary",
+	Long: `"go-licenses csv" generates licenses csv table for a go application for license
+compliance purposes. It scans every file of a go module using google/licenseclassifier/v2
+to identify licenses. Use the tool at your own risk, because it's never meant to
+replace human verification.
+You can manually override scan result for some modules using go-licenses.yaml,
+refer to documentation in https://github.com/Bobgy/go-licenses/tree/main/v2#config--output-examples`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		binaryPath := args[0]
@@ -47,12 +50,14 @@ var csvCmd = &cobra.Command{
 		}
 	},
 }
+var flagBinary *bool
 
 func init() {
 	rootCmd.AddCommand(csvCmd)
+	flagBinary = csvCmd.Flags().BoolP("binary", "b", false, "scan a go binary instead of a package, the binary must be built using current go working dir in go modules mode")
 }
 
-func csvImp(ctx context.Context, binaryPath string) (err error) {
+func csvImp(ctx context.Context, binaryOrImportPath string) (err error) {
 	config, err := configmodule.Load("")
 	if err != nil {
 		return err
@@ -66,20 +71,21 @@ func csvImp(ctx context.Context, binaryPath string) (err error) {
 		klog.V(2).InfoS("Config: use default license DB")
 	}
 	klog.V(2).InfoS("Config: license DB path", "path", config.Module.LicenseDB.Path)
-
-	metadata, err := gocli.ExtractBinaryMetadata(binaryPath)
-	if err != nil {
-		return err
+	var mods []gocli.Module
+	if flagBinary != nil && *flagBinary {
+		mods, err = modsFromBinary(binaryOrImportPath, config)
+		if err != nil {
+			return err
+		}
+	} else {
+		mods, err = gocli.ListDeps(binaryOrImportPath)
+		if err != nil {
+			return err
+		}
 	}
-	goModules := metadata.Deps
-	main, err := mainModule(metadata, config)
-	if err != nil {
-		return err
-	}
-	goModules = append([]gocli.Module{*main}, goModules...)
-	klog.InfoS("Done: found dependencies", "count", len(goModules))
+	klog.InfoS("Done: found dependencies", "count", len(mods))
 	if klog.V(3).Enabled() {
-		for _, goModule := range goModules {
+		for _, goModule := range mods {
 			klog.InfoS("dependency", "module", goModule.Path, "version", goModule.Version, "Dir", goModule.Dir)
 		}
 	}
@@ -101,7 +107,7 @@ func csvImp(ctx context.Context, binaryPath string) (err error) {
 	}
 	licenseCount := 0
 	errorCount := 0
-	for _, goModule := range goModules {
+	for _, goModule := range mods {
 		report := func(err error, args ...interface{}) {
 			errorCount = errorCount + 1
 			errorArgs := []interface{}{"module", goModule.Path}
@@ -275,8 +281,22 @@ func csvImp(ctx context.Context, binaryPath string) (err error) {
 	if errorCount > 0 {
 		return fmt.Errorf("Failed to scan licenses for %v module(s)", errorCount)
 	}
-	klog.InfoS("Done: scan licenses of dependencies", "licenseCount", licenseCount, "moduleCount", len(goModules))
+	klog.InfoS("Done: scan licenses of dependencies", "licenseCount", licenseCount, "moduleCount", len(mods))
 	return nil
+}
+
+func modsFromBinary(binaryPath string, cfg *config.GoModLicensesConfig) ([]gocli.Module, error) {
+	metadata, err := gocli.ExtractBinaryMetadata(binaryPath)
+	if err != nil {
+		return nil, err
+	}
+	goModules := metadata.Deps
+	main, err := mainModule(metadata, cfg)
+	if err != nil {
+		return nil, err
+	}
+	goModules = append([]gocli.Module{*main}, goModules...)
+	return goModules, nil
 }
 
 func defaultLicenseDB() (string, error) {

@@ -15,7 +15,8 @@
 package main
 
 import (
-	"encoding/csv"
+	"context"
+	"fmt"
 	"os"
 
 	"github.com/google/go-licenses/v2/licenses"
@@ -39,25 +40,25 @@ func init() {
 }
 
 func csvMain(_ *cobra.Command, args []string) error {
-	writer := csv.NewWriter(os.Stdout)
-
 	classifier, err := licenses.NewClassifier(confidenceThreshold)
 	if err != nil {
 		return err
 	}
 
-	mods, err := licenses.Modules(classifier, args...)
+	mods, err := licenses.Modules(context.Background(), classifier, args...)
 	if err != nil {
 		return err
 	}
 	for _, mod := range mods {
 		for _, license := range mod.Licenses {
-			licenseURL := "Unknown"
-			if err := writer.Write([]string{mod.Path, licenseURL, license.ID}); err != nil {
+			// Adding an extra " " after license.URL makes it easier to
+			// navigate to URLs in VSCode, because VSCode misinterprets
+			// the content after "," to part of the URL if there is no
+			// extra space.
+			if _, err := os.Stdout.WriteString(fmt.Sprintf("%s, %s, %s\n", mod.Path, license.URL, license.ID)); err != nil {
 				return err
 			}
 		}
 	}
-	writer.Flush()
-	return writer.Error()
+	return nil
 }

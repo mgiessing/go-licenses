@@ -15,12 +15,16 @@
 package licenses
 
 import (
+	"context"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"time"
 
+	"github.com/golang/glog"
 	"github.com/google/go-licenses/v2/gocli"
+	"github.com/google/go-licenses/v2/third_party/go/pkgsite/source"
 )
 
 type License struct {
@@ -35,14 +39,14 @@ type Module struct {
 }
 
 // Modules finds licenses of direct and transitive module dependencies of the import path packages.
-func Modules(classifier Classifier, importPaths ...string) ([]Module, error) {
+func Modules(ctx context.Context, classifier Classifier, importPaths ...string) ([]Module, error) {
 	mods, err := gocli.ListDeps(importPaths...)
 	if err != nil {
 		return nil, err
 	}
 	res := make([]Module, 0, len(mods))
 	for _, mod := range mods {
-		modLicense, err := module(mod, classifier)
+		modLicense, err := module(ctx, mod, classifier)
 		if err != nil {
 			return res, err
 		}
@@ -54,7 +58,7 @@ func Modules(classifier Classifier, importPaths ...string) ([]Module, error) {
 var ErrorEmptyDir = fmt.Errorf("dir is empty")
 
 // module scans a module for licenses.
-func module(m gocli.Module, classifier Classifier) (res Module, err error) {
+func module(ctx context.Context, m gocli.Module, classifier Classifier) (res Module, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("scanning licenses for module %q: %w", m.Path, err)
@@ -63,6 +67,17 @@ func module(m gocli.Module, classifier Classifier) (res Module, err error) {
 	res.Module = m
 	if m.Dir == "" {
 		return res, ErrorEmptyDir
+	}
+	client := source.NewClient(time.Second * 20)
+	ver := m.Version
+	if ver == "" {
+		// defaults to master, when version not found
+		ver = "master"
+		glog.Warningf("module %s has empty version, defaults to master. The license URL may be incorrect. Please verify!", m.Path)
+	}
+	remote, err := source.ModuleInfo(ctx, client, m.Path, ver)
+	if err != nil {
+		return res, err
 	}
 	res.Licenses = make([]License, 0)
 	err = filepath.Walk(m.Dir, func(path string, info fs.FileInfo, err error) error {
@@ -88,9 +103,14 @@ func module(m gocli.Module, classifier Classifier) (res Module, err error) {
 			// It's expected for files without license text in it.
 			return nil
 		}
+		relativePath, err := filepath.Rel(m.Dir, path)
+		if err != nil {
+			return err
+		}
 		res.Licenses = append(res.Licenses, License{
 			ID:   licenseID,
-			Path: path,
+			Path: relativePath,
+			URL:  remote.FileURL(relativePath),
 		})
 		return nil
 	})

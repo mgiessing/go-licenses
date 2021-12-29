@@ -43,6 +43,8 @@ type Library struct {
 	// Packages contains import paths for Go packages in this library.
 	// It may not be the complete set of all packages in the library.
 	Packages []string
+	// Parent go module.
+	Module *packages.Module
 }
 
 // PackagesError aggregates all Packages[].Errors into a single error.
@@ -124,6 +126,7 @@ func Libraries(ctx context.Context, classifier Classifier, importPaths ...string
 			for _, p := range pkgs {
 				libraries = append(libraries, &Library{
 					Packages: []string{p.PkgPath},
+					Module:   p.Module,
 				})
 			}
 			continue
@@ -133,6 +136,10 @@ func Libraries(ctx context.Context, classifier Classifier, importPaths ...string
 		}
 		for _, pkg := range pkgs {
 			lib.Packages = append(lib.Packages, pkg.PkgPath)
+			if lib.Module == nil {
+				// All the sub packages should belong to the same module.
+				lib.Module = pkg.Module
+			}
 		}
 		libraries = append(libraries, lib)
 	}

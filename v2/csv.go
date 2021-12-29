@@ -16,11 +16,14 @@ package main
 
 import (
 	"context"
-	"encoding/csv"
+	"fmt"
 	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/google/go-licenses/v2/licenses"
+	"github.com/google/go-licenses/v2/third_party/go/pkgsite/source"
 	"github.com/spf13/cobra"
 )
 
@@ -42,8 +45,6 @@ func init() {
 }
 
 func csvMain(_ *cobra.Command, args []string) error {
-	writer := csv.NewWriter(os.Stdout)
-
 	classifier, err := licenses.NewClassifier(confidenceThreshold)
 	if err != nil {
 		return err
@@ -54,16 +55,40 @@ func csvMain(_ *cobra.Command, args []string) error {
 		return err
 	}
 	for _, lib := range libs {
-		licenseURL := "Unknown"
-		licenseName, _, err := classifier.Identify(lib.LicensePath)
-		if err != nil {
-			glog.Errorf("Error identifying license in %q: %v", lib.LicensePath, err)
-			licenseName = "Unknown"
+		m := lib.Module
+		client := source.NewClient(time.Second * 20)
+		ver := m.Version
+		if ver == "" {
+			// This always happens for the module in development.
+			ver = "master"
+			glog.Warningf("module %s has empty version, defaults to master. The license URL may be incorrect. Please verify!", m.Path)
 		}
-		if err := writer.Write([]string{lib.Name(), licenseURL, licenseName}); err != nil {
+		remote, err := source.ModuleInfo(context.Background(), client, m.Path, ver)
+		if err != nil {
+			glog.Warningf("finding module info for %s: %s", m.Path, err)
+			// Do not exit early, because URL is optional
+			remote = nil
+		}
+		licenseName := "Unknown"
+		licenseURL := "Unknown"
+		if lib.LicensePath != "" {
+			licenseName, _, err = classifier.Identify(lib.LicensePath)
+			if err != nil {
+				glog.Errorf("Error identifying license in %q: %v", lib.LicensePath, err)
+				licenseName = "Unknown"
+			}
+			licenseRelativePath, err := filepath.Rel(m.Dir, lib.LicensePath)
+			if err != nil {
+				glog.Errorf("Error converting license path %q to module %s relative path: %v", lib.LicensePath, m.Path, err)
+			}
+			licenseURL = remote.FileURL(licenseRelativePath)
+			if licenseURL == "" {
+				licenseURL = "Unknown"
+			}
+		}
+		if _, err := os.Stdout.WriteString(fmt.Sprintf("%s, %s, %s\n", lib.Name(), licenseURL, licenseName)); err != nil {
 			return err
 		}
 	}
-	writer.Flush()
-	return writer.Error()
+	return nil
 }

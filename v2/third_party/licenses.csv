@@ -39,7 +39,6 @@ github.com/spf13/cobra, https://github.com/spf13/cobra/blob/v1.3.0/cobra/cmd/lic
 github.com/spf13/cobra, https://github.com/spf13/cobra/blob/v1.3.0/cobra/cmd/license_mit.go, MIT
 github.com/spf13/cobra, https://github.com/spf13/cobra/blob/v1.3.0/cobra/cmd/licenses.go, Apache-2.0
 github.com/spf13/pflag, https://github.com/spf13/pflag/blob/v1.0.5/LICENSE, BSD-3-Clause
-github.com/src-d/gcfg, https://github.com/src-d/gcfg/blob/v1.4.0/LICENSE, BSD-3-Clause
 github.com/xanzy/ssh-agent, https://github.com/xanzy/ssh-agent/blob/v0.3.0/LICENSE, Apache-2.0
 go.opencensus.io, https://github.com/census-instrumentation/opencensus-go/blob/v0.23.0/LICENSE, Apache-2.0
 golang.org/x/crypto, https://cs.opensource.google/go/x/crypto/+/32db7946:LICENSE, BSD-3-Clause
@@ -58,6 +57,4 @@ google.golang.org/genproto, https://github.com/googleapis/go-genproto/blob/3a66f
 google.golang.org/grpc, https://github.com/grpc/grpc-go/blob/v1.42.0/LICENSE, Apache-2.0
 google.golang.org/grpc, https://github.com/grpc/grpc-go/blob/v1.42.0/NOTICE.txt, Apache-2.0
 google.golang.org/protobuf, https://github.com/protocolbuffers/protobuf-go/blob/v1.27.1/LICENSE, BSD-3-Clause
-gopkg.in/src-d/go-billy.v4, https://github.com/src-d/go-billy/blob/v4.3.2/LICENSE, Apache-2.0
-gopkg.in/src-d/go-git.v4, https://github.com/src-d/go-git/blob/v4.13.1/LICENSE, Apache-2.0
 gopkg.in/warnings.v0, https://github.com/go-warnings/warnings/blob/v0.1.2/LICENSE, BSD-2-Clause

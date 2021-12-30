@@ -20,12 +20,15 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/golang/glog"
 	"github.com/google/go-licenses/v2/gocli"
 	"github.com/google/go-licenses/v2/third_party/go/pkgsite/source"
 )
+
+var licenseRegexp = regexp.MustCompile(`^(?i)(LICEN(S|C)E|COPYING|README|NOTICE).*$`)
 
 // License is an open source software license.
 type License struct {

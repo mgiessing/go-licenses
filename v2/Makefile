@@ -16,6 +16,13 @@ csv: third_party/licenses.csv
 check: FORCE
 	go run . check github.com/google/go-licenses/v2
 
+SAVE_PATH=testdata/saved
+
+save: FORCE
+	# This currently fails with: one or more modules have an incompatible/unknown license: map["FORBIDDEN":["github.com/spf13/cobra"]]
+	rm -rf $(SAVE_PATH)
+	go run . save github.com/google/go-licenses/v2 --save_path $(SAVE_PATH)
+
 third_party/licenses.csv: FORCE
 	go run . csv github.com/google/go-licenses/v2 | tee third_party/licenses.csv
 

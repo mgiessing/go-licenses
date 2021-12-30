@@ -63,6 +63,22 @@ func (t Type) String() string {
 	}
 }
 
+// Stricter returns the more strict license type.
+func Stricter(x, y Type) bool {
+	return strictness[x] > strictness[y]
+}
+
+// If a module has multiple licenses, we should report the most strict license.
+var strictness = map[Type]int{
+	Forbidden:    6,
+	Unknown:      5,
+	Restricted:   4,
+	Reciprocal:   3,
+	Notice:       2,
+	Permissive:   1,
+	Unencumbered: 0,
+}
+
 // Classifier can detect the type of a software license.
 type Classifier interface {
 	Identify(licensePath string) (string, Type, error)

@@ -48,6 +48,13 @@ type Module struct {
 	Licenses []License
 }
 
+func (m *Module) String() string {
+	if m == nil {
+		return ""
+	}
+	return m.Path
+}
+
 // Error when we find an empty DIR
 var ErrorEmptyDir = fmt.Errorf("dir is empty")
 

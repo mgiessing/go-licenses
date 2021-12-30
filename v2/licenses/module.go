@@ -20,12 +20,15 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/golang/glog"
 	"github.com/google/go-licenses/v2/gocli"
 	"github.com/google/go-licenses/v2/third_party/go/pkgsite/source"
 )
+
+var licenseRegexp = regexp.MustCompile(`^(?i)(LICEN(S|C)E|COPYING|README|NOTICE).*$`)
 
 type License struct {
 	ID   string // SPDX ID. https://spdx.org/licenses.

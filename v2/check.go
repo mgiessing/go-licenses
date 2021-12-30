@@ -17,8 +17,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
+	"github.com/google/go-licenses/v2/gocli"
 	"github.com/google/go-licenses/v2/licenses"
 	"github.com/spf13/cobra"
 )
@@ -42,18 +42,19 @@ func checkMain(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	libs, err := licenses.Libraries(context.Background(), classifier, args...)
+	mods, err := gocli.ListDeps(args...)
 	if err != nil {
 		return err
 	}
-	for _, lib := range libs {
-		licenseName, licenseType, err := classifier.Identify(lib.LicensePath)
+	for _, mod := range mods {
+		m, err := licenses.Scan(context.Background(), mod, classifier, licenses.ScanOptions{})
 		if err != nil {
 			return err
 		}
-		if licenseType == licenses.Forbidden {
-			fmt.Fprintf(os.Stderr, "Forbidden license type %s for library %v\n", licenseName, lib)
-			os.Exit(1)
+		for _, license := range m.Licenses {
+			if license.Type == licenses.Forbidden {
+				return fmt.Errorf("Forbidden license type %s for library %v: %s\n", license.ID, mod.Path, license.URL)
+			}
 		}
 	}
 	return nil

@@ -25,6 +25,9 @@ import (
 var (
 	rootCmd = &cobra.Command{
 		Use: "licenses",
+		// Avoid usage and errors being printed unnecessarily: https://github.com/spf13/cobra/issues/340
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 
 	// Flags shared between subcommands

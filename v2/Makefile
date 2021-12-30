@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+csv: third_party/licenses.csv
+check: FORCE
+	go run . check github.com/google/go-licenses/v2
+
 third_party/licenses.csv: FORCE
 	go run . csv github.com/google/go-licenses/v2 | tee third_party/licenses.csv
 

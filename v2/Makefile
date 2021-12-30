@@ -15,9 +15,13 @@
 go-licenses: FORCE
 	go build .
 
-csv: third_party/licenses.csv
+csv: FORCE third_party/licenses.csv
 check: FORCE go-licenses
 	./go-licenses check github.com/google/go-licenses/v2
+save: FORCE go-licenses
+	# This currently fails with: one or more modules have an incompatible/unknown license: map["FORBIDDEN":["github.com/spf13/cobra"]]
+	rm -rf tests/testdata
+	./go-licenses save github.com/google/go-licenses/v2 --save_path tests/testdata/saved
 
 third_party/licenses.csv: FORCE go-licenses
 	./go-licenses csv github.com/google/go-licenses/v2 | tee third_party/licenses.csv

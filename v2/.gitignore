@@ -9,3 +9,6 @@ dist
 
 # Editor
 .vscode
+
+# Temporarily saved license files
+tests/testdata/saved

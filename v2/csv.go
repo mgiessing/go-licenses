@@ -29,9 +29,6 @@ var (
 		Short: "Prints all licenses that apply to a Go package and its dependencies",
 		Args:  cobra.MinimumNArgs(1),
 		RunE:  csvMain,
-		// Avoid usage and errors being printed unnecessarily: https://github.com/spf13/cobra/issues/340
-		SilenceUsage:  true,
-		SilenceErrors: true,
 	}
 )
 

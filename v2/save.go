@@ -67,7 +67,7 @@ func saveMain(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	libs, err := licenses.Libraries(context.Background(), classifier, args...)
+	mods, err := licenses.Modules(context.Background(), classifier, args...)
 	if err != nil {
 		return err
 	}
@@ -87,65 +87,89 @@ func saveMain(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	libsWithBadLicenses := make(map[licenses.Type][]*licenses.Library)
-	for _, lib := range libs {
-		libSaveDir := filepath.Join(savePath, unvendor(lib.Name()))
-		// Detect what type of license this library has and fulfill its requirements, e.g. copy license, copyright notice, source code, etc.
-		_, licenseType, err := classifier.Identify(lib.LicensePath)
-		if err != nil {
-			return err
+	modsWithBadLicenses := make(map[licenses.Type][]*licenses.Module)
+	for _, mod := range mods {
+		modSaveDir := filepath.Join(savePath, mod.Path)
+		// Detect what type of license this module has and fulfill its requirements, e.g. copy license, copyright notice, source code, etc.
+
+		// Finds the most strict license type, defaults to unencumbered (the most permissive).
+		licenseType := licenses.Unencumbered
+		for _, license := range mod.Licenses {
+			if licenses.Stricter(license.Type, licenseType) {
+				licenseType = license.Type
+			}
 		}
+
+		// For simplicity, we pick the most strict license and comply
+		// to all licenses in the same way.
 		switch licenseType {
 		case licenses.Restricted, licenses.Reciprocal:
-			// Copy the entire source directory for the library.
-			libDir := filepath.Dir(lib.LicensePath)
-			if err := copySrc(libDir, libSaveDir); err != nil {
+			// Copy the entire source directory for the module.
+			if err := copySrc(mod.Dir, modSaveDir); err != nil {
 				return err
 			}
 		case licenses.Notice, licenses.Permissive, licenses.Unencumbered:
 			// Just copy the license and copyright notice.
-			if err := copyNotices(lib.LicensePath, libSaveDir); err != nil {
+			if err := copyNotices(mod, modSaveDir); err != nil {
 				return err
 			}
 		default:
-			libsWithBadLicenses[licenseType] = append(libsWithBadLicenses[licenseType], lib)
+			// Note, mod variable will keep changing, so clone it first.
+			clonedMod := mod
+			modsWithBadLicenses[licenseType] = append(modsWithBadLicenses[licenseType], &clonedMod)
 		}
 	}
-	if len(libsWithBadLicenses) > 0 {
-		return fmt.Errorf("one or more libraries have an incompatible/unknown license: %q", libsWithBadLicenses)
+	if len(modsWithBadLicenses) > 0 {
+		return fmt.Errorf("one or more modules have an incompatible/unknown license: %q", modsWithBadLicenses)
 	}
 	return nil
+}
+
+// Dir permission needs execute bit for `cd` or `ls` commands
+// ref: https://www.tutorialspoint.com/unix/unix-file-permission.htm
+const permDirCurrentUser = 0700
+
+var copyOpt = copy.Options{
+	// Go module files are by default read-only, so we need to change perm on copy.
+	// Reference: https://github.com/golang/go/issues/31481.
+	AddPermission: 0600,
+	// Skip the .git directory for copying, if it exists, since we don't want to save the user's
+	// local Git config along with the source code.
+	Skip: func(src string) (bool, error) { return strings.HasSuffix(src, ".git"), nil },
 }
 
 func copySrc(src, dest string) error {
-	// Skip the .git directory for copying, if it exists, since we don't want to save the user's
-	// local Git config along with the source code.
-	opt := copy.Options{
-		Skip: func(src string) (bool, error) {
-			return strings.HasSuffix(src, ".git"), nil
-		},
-		AddPermission: 0600,
-	}
-	if err := copy.Copy(src, dest, opt); err != nil {
+	if err := copy.Copy(src, dest, copyOpt); err != nil {
 		return err
 	}
 	return nil
 }
 
-func copyNotices(licensePath, dest string) error {
-	if err := copy.Copy(licensePath, filepath.Join(dest, filepath.Base(licensePath))); err != nil {
-		return err
-	}
-
-	src := filepath.Dir(licensePath)
-	files, err := ioutil.ReadDir(src)
-	if err != nil {
-		return err
-	}
-	for _, f := range files {
-		if fName := f.Name(); !f.IsDir() && noticeRegexp.MatchString(fName) {
-			if err := copy.Copy(filepath.Join(src, fName), filepath.Join(dest, fName)); err != nil {
-				return err
+func copyNotices(mod licenses.Module, dest string) error {
+	saved := map[string]bool{}
+	for _, license := range mod.Licenses {
+		licensePath := filepath.Join(mod.Dir, license.Path)
+		if err := copy.Copy(licensePath, filepath.Join(dest, license.Path), copyOpt); err != nil {
+			return err
+		}
+		dir := filepath.Dir(licensePath)
+		if saved[dir] {
+			continue
+		}
+		saved[dir] = true
+		files, err := ioutil.ReadDir(dir)
+		if err != nil {
+			return err
+		}
+		dirRelativePath, err := filepath.Rel(mod.Dir, dir)
+		if err != nil {
+			return err
+		}
+		for _, f := range files {
+			if fName := f.Name(); !f.IsDir() && noticeRegexp.MatchString(fName) {
+				if err := copy.Copy(filepath.Join(dir, fName), filepath.Join(dest, dirRelativePath, fName), copyOpt); err != nil {
+					return err
+				}
 			}
 		}
 	}

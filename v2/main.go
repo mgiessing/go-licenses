@@ -16,7 +16,6 @@ package main
 
 import (
 	"flag"
-	"strings"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -25,6 +24,9 @@ import (
 var (
 	rootCmd = &cobra.Command{
 		Use: "licenses",
+		// Avoid usage and errors being printed unnecessarily: https://github.com/spf13/cobra/issues/340
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 
 	// Flags shared between subcommands
@@ -45,12 +47,4 @@ func main() {
 	if err := rootCmd.Execute(); err != nil {
 		glog.Exit(err)
 	}
-}
-
-// Unvendor removes the "*/vendor/" prefix from the given import path, if present.
-func unvendor(importPath string) string {
-	if vendorerAndVendoree := strings.SplitN(importPath, "/vendor/", 2); len(vendorerAndVendoree) == 2 {
-		return vendorerAndVendoree[1]
-	}
-	return importPath
 }

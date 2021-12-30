@@ -39,6 +39,13 @@ type Module struct {
 	Licenses []License
 }
 
+func (m *Module) String() string {
+	if m == nil {
+		return ""
+	}
+	return m.Path
+}
+
 // Modules finds licenses of direct and transitive module dependencies of the import path packages.
 func Modules(ctx context.Context, classifier Classifier, importPaths ...string) ([]Module, error) {
 	mods, err := gocli.ListDeps(importPaths...)

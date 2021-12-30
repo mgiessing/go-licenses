@@ -15,6 +15,10 @@
 go-licenses: FORCE
 	go build .
 
+csv: third_party/licenses.csv
+check: FORCE go-licenses
+	./go-licenses check github.com/google/go-licenses/v2
+
 third_party/licenses.csv: FORCE go-licenses
 	./go-licenses csv github.com/google/go-licenses/v2 | tee third_party/licenses.csv
 

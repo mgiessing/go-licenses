@@ -31,6 +31,7 @@ type License struct {
 	ID   string // SPDX ID. https://spdx.org/licenses.
 	Path string // Relative path in the module.
 	URL  string // Optional, license file URL on internet.
+	Type Type   // Type of the software license.
 }
 
 type Module struct {
@@ -98,7 +99,7 @@ func module(ctx context.Context, m gocli.Module, classifier Classifier) (res Mod
 			// Skip file names that does not look like a license file.
 			return nil
 		}
-		licenseID, _, err := classifier.Identify(path)
+		licenseID, licenseType, err := classifier.Identify(path)
 		if err != nil {
 			// It's expected for files without license text in it.
 			return nil
@@ -111,6 +112,7 @@ func module(ctx context.Context, m gocli.Module, classifier Classifier) (res Mod
 			ID:   licenseID,
 			Path: relativePath,
 			URL:  remote.FileURL(relativePath),
+			Type: licenseType,
 		})
 		return nil
 	})

@@ -42,18 +42,16 @@ func checkMain(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	libs, err := licenses.Libraries(context.Background(), classifier, args...)
+	mods, err := licenses.Modules(context.Background(), classifier, args...)
 	if err != nil {
 		return err
 	}
-	for _, lib := range libs {
-		licenseName, licenseType, err := classifier.Identify(lib.LicensePath)
-		if err != nil {
-			return err
-		}
-		if licenseType == licenses.Forbidden {
-			fmt.Fprintf(os.Stderr, "Forbidden license type %s for library %v\n", licenseName, lib)
-			os.Exit(1)
+	for _, mod := range mods {
+		for _, license := range mod.Licenses {
+			if license.Type == licenses.Forbidden {
+				fmt.Fprintf(os.Stderr, "Forbidden license type %s for library %v: %s\n", license.ID, mod.Path, license.URL)
+				os.Exit(1)
+			}
 		}
 	}
 	return nil

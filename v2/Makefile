@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-precommit: FORCE tidy lint test csv csv-vendored
+precommit: FORCE tidy lint test csv csv-vendored csv-replace
 
 csv: FORCE
 	go run . csv github.com/google/go-licenses/v2 | tee third_party/licenses.csv
@@ -23,6 +23,7 @@ csv-%: FORCE install
 	go-licenses csv . | tee third_party/licenses.csv
 # Listing all the valid expansion commands for csv-% for command line auto completion.
 csv-vendored:
+csv-replace:
 
 lint: FORCE
 # There's no need to lint third_party packages, so we explicitly list other packages here.

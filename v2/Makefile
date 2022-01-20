@@ -39,3 +39,18 @@ install: FORCE
 	go install .
 
 FORCE: ;
+
+VERSION=v0.1.0-2022-01-20
+
+# Release on github.
+# Note, edit the VERSION variable first.
+.PHONY: release
+release: go-licenses
+	gh release create $(VERSION) \
+		go-licenses \
+		--title "$(VERSION)" \
+		--prerelease
+
+.PHONY: go-licenses
+go-licenses:
+	go build .

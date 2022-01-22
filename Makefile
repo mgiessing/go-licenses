@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-precommit: FORCE tidy lint csv
-
-csv: FORCE
-	go run . csv github.com/google/go-licenses
-
-lint: FORCE
-# There's no need to lint third_party packages, so we explicitly list other packages here.
-	golint --set_exit_status . licenses/...
+precommit: tidy lint
 
 tidy: FORCE
 	go mod tidy
+
+lint:  FORCE
+# Note, golangci-lint version is pinned in go.mod. When upgrading, also
+# upgrade version in .github/workflows/golangci-lint.yml.
+	go run github.com/golangci/golangci-lint/cmd/golangci-lint run -v
 
 FORCE: ;

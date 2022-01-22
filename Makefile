@@ -12,14 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-precommit: tidy lint
+# All of these should pass before sending a PR.
+precommit: test lint tidy
 
-tidy: FORCE
-	go mod tidy
+test: FORCE
+	go test ./...
 
 lint:  FORCE
 # Note, golangci-lint version is pinned in go.mod. When upgrading, also
 # upgrade version in .github/workflows/golangci-lint.yml.
 	go run github.com/golangci/golangci-lint/cmd/golangci-lint run -v
+
+tidy: FORCE
+	go mod tidy
 
 FORCE: ;

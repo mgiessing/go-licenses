@@ -141,6 +141,22 @@ func (i *Info) RawURL(pathname string) string {
 	})
 }
 
+// SetCommit overrides commit to a specified commit. Usually, you should pass your version to
+// ModuleInfo(). However, when you do not know the version and just wants a link that points to
+// a known commit/branch/tag. You can use this method to directly override the commit like
+// info.SetCommit("master").
+//
+// Note this is different from directly passing "master" as version to ModuleInfo(), because for
+// modules not at the root of a repo, there are conventions that add a module's relative dir in
+// front of the version as the actual git tag. For example, for a sub module at ./submod whose
+// version is v1.0.1, the actual git tag should be submod/v1.0.1.
+func (i *Info) SetCommit(commit string) {
+	if i == nil {
+		return
+	}
+	i.commit = commit
+}
+
 // map of common urlTemplates
 var urlTemplatesByKind = map[string]urlTemplates{
 	"github":    githubURLTemplates,

@@ -49,6 +49,15 @@ build-linux: clean
 	GOOS=linux \
 	GOARCH=amd64 \
 	go build -tags netgo -ldflags '-extldflags "-static"' -o dist/linux/go-licenses github.com/google/go-licenses/v2
+	
+.PHONY: build-linux-ppc64le
+build-linux: clean
+	mkdir -p dist/linux
+	GO111MODULE=on \
+	CGO_ENABLED=0 \
+	GOOS=linux \
+	GOARCH=ppc64le \
+	go build -tags netgo -ldflags '-extldflags "-static"' -o dist/linux/go-licenses github.com/google/go-licenses/v2
 
 .PHONY: build-darwin
 build-darwin: clean
@@ -61,6 +70,16 @@ build-darwin: clean
 
 .PHONY: dist-linux
 dist-linux: build-linux
+	mkdir -p dist/linux
+	cp -r NOTICES dist/linux/
+	cp -r third_party/google/licenseclassifier/licenses dist/linux/
+	tar -C dist/linux -czf dist/go-licenses-linux.tar.gz \
+		go-licenses \
+		licenses \
+		NOTICES
+
+.PHONY: dist-linux-ppc64le
+dist-linux: build-linux-ppc64le
 	mkdir -p dist/linux
 	cp -r NOTICES dist/linux/
 	cp -r third_party/google/licenseclassifier/licenses dist/linux/
